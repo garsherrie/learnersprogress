@@ -32,7 +32,7 @@
                 <div class="input-group">
                     <div class="input-group-text">
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="choices[{{$index}}][isCorrect]" id="isCorrect" required>
+                            <input class="form-check-input" type="radio" name="choices[{{$index}}][isCorrect]" id="isCorrect" >
                             <label class="form-check-label" for="isCorrect"></label>
                         </div>
                     </div>

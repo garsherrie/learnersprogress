@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Choice;
 use App\Models\Subject;
+use App\Models\Usercourseprogress;
 use App\Models\Usersubjectprogress;
 use Illuminate\Http\Request;
 use App\Models\Topic;
@@ -88,6 +89,35 @@ class TopicsController extends Controller
         //$topic->completed = "";
         $topic->video = Storage::url($request->file('video')->store('public/videos'));
         $topic->save();
+
+        $initial_top=$topic_no-1;
+        $new_perc=$initial_top/$topic_no;
+        //dd($new_perc);
+
+//        $allcourses = count((new Subject)->where(['course_id' => $course_id])->get('id'));
+//        //dd($allcourses);
+
+
+        Usersubjectprogress::where(['subject_id' => $subject_id])->update(['percentage_progress' => \Illuminate\Support\Facades\DB::raw('`percentage_progress` * ' . $new_perc)]);
+        //dd($users);
+
+
+
+//        $initial_sub = count((new Subject())->where('course_id', $course_id)->get());
+//        dd($initial_sub);
+////        $initial_sub=$subject_number-1;
+////        $new_perc=$initial_sub/$subject_number;
+////
+////        $allcourses = count((new Subject)->where(['course_id' => $course_id])->get('id'));
+////        //dd($allcourses);
+////
+////
+////        Usercourseprogress::where(['course_id' => $course_id])->update(['percentage_progress' => \Illuminate\Support\Facades\DB::raw('`percentage_progress` * ' . $new_perc)]);
+////        //dd($users);
+//
+
+
+
         foreach ($request->input('choices') as $choice) {
             $new_choice = new Choice();
             $new_choice->topic_id = $topic->id;
@@ -155,9 +185,40 @@ class TopicsController extends Controller
 
 
 
+
         $c=Topic::where('id',$id)->pluck('subject_id')->toArray();
         $subject_id=$c[0];
+        $initial_top = count((new Topic())->where('subject_id', $subject_id)->get());
+        $now_top=$initial_top-1;
+        //dd($now_sub);
+
+
+        if($now_top !==0){
+                $new_perc=$initial_top/$now_top;
+                //dd($new_perc);
+
+            $x=1;
+
+
+
+                if($new_perc==='1'){
+                    Usersubjectprogress::where(['subject_id' => $subject_id, 'completed' => 'no'])->update(['topic_number'=>DB::raw('topic_number - 1'),'completed'=>'yes','percentage_progress' => \Illuminate\Support\Facades\DB::raw('`percentage_progress` * ' . $new_perc)]);
+                    DB::table('usersubjects')->where(['subject_id' => $subject_id])->update(array('completed' => 'yes'));
+                }
+                else {
+                    Usersubjectprogress::where(['subject_id' => $subject_id, 'completed' => 'no'])->update(['topic_number'=>DB::raw('topic_number - 1'),'percentage_progress' => \Illuminate\Support\Facades\DB::raw('`percentage_progress` * ' . $new_perc)]);
+                    DB::table('usersubjects')->where(['subject_id' => $subject_id])->update(array('completed' => 'no'));
+                }
+        }
+        else{
+            Usersubjectprogress::where(['subject_id' => $subject_id])->update(['percentage_progress' =>'0','completed'=>'no']);
+            DB::table('usersubjects')->where(['subject_id' => $subject_id])->update(array('completed' => 'no'));
+        }
+
+
         DB::delete('delete from topics where id = ?',[$id]);
+
+
         return redirect('/addtopic/'.$subject_id)->with('success','topic deleted successfully');
     }
 }

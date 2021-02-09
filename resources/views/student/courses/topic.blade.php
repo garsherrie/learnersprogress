@@ -1,9 +1,15 @@
 @extends('layouts.app')
 @section('content')
 
+    <div class="">
+        <a href="">Back</a>
+    </div>
+    <br>
     <div class="container2">
         <div class="skill2" style="width: {{$percentage}}%">{{number_format($percentage, 2)}}%</div>
     </div>
+
+    <br>
     <div class="card" style="width: 100%; height: auto; margin-left: 10px; margin-right: 10px">
         <div class="row">
             <div class="col-12 text-center">

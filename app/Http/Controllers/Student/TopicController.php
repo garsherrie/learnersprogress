@@ -139,14 +139,10 @@ class TopicController extends Controller
         DB::table('usersubjectprogresses')->where(['subject_id' => $subject->id, 'user_id' => $user_id])->update(array('percentage_progress' => $percentage));
 
 
-        //$allsubjects = count((new Usersubject)->where(['usercourses_id' => $courseid, 'user_id' => $user_id])->get('id'));
+
         $allsubjects = count((new Subject)->where(['course_id' => $courseid])->get('id'));
-        //dd($allsubjects);
         $donesubjects = count((new Usersubject)->where(['usercourses_id' => $courseid, 'user_id' => $user_id, 'completed' => 'yes'])->get('id'));
-
         $percentagecourse = $allsubjects === 0 ? 0 : ($donesubjects / $allsubjects) * 100;
-        //dd($percentagecourse);
-
 
         if ($percentagecourse == 100) {
 

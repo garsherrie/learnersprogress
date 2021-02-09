@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use App\Models\Subject;
+use App\Models\Usersubject;
 use App\Models\Topic;
 use App\Models\Choice;
 use App\Models\Usercourseprogress;
@@ -78,7 +80,7 @@ class SubjectsController extends Controller
         //dd($allcourses);
 
 
-        $users =  Usercourseprogress::where(['course_id' => $course_id])->update(['percentage_progress' => DB::raw('`percentage_progress` * ' . $new_perc)]);
+        Usercourseprogress::where(['course_id' => $course_id])->update(['percentage_progress' => DB::raw('`percentage_progress` * ' . $new_perc)]);
         //dd($users);
 
 
@@ -150,6 +152,19 @@ class SubjectsController extends Controller
         }
         $c=Subject::where('id',$id)->pluck('course_id')->toArray();
         $course_id=$c[0];
+
+        $initial_sub = count((new Subject())->where('course_id', $course_id)->get());
+        $now_sub=$initial_sub-1;
+        //dd($now_sub);
+
+        if($now_sub !==0){
+            $new_perc=$initial_sub/$now_sub;
+            //dd($new_perc);
+            Usercourseprogress::where(['course_id' => $course_id,'completed'=>'no'])->update(['percentage_progress' => DB::raw('`percentage_progress` * ' . $new_perc)]);
+        }
+
+        //Usercourseprogress::where(['course_id' => $course_id,'completed'=>'no'])->update(['percentage_progress' => DB::raw('`percentage_progress` * ' . $new_perc)]);
+
 
         DB::delete('delete from subjects where id = ?',[$id]);
         return redirect('/addsubject/'.$course_id)->with('success','subject deleted successfully');
