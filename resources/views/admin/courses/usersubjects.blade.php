@@ -1,8 +1,17 @@
 @extends('layouts.app')
 @section('content')
-    <p>Courses</p>
 
-    <table class="table">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">{{ __('Courses') }}</div>
+
+                    <div class="card-body">
+
+
+    <table class="table table-bordered">
         <tr>
             <th>ID</th>
             <th>Name</th>
@@ -24,5 +33,11 @@
 
         @endforeach
     </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 @endsection

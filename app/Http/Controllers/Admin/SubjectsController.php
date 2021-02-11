@@ -23,18 +23,21 @@ class SubjectsController extends Controller
      */
     public function index($course_id)
     {
+        //view all the subjects is done by this function
         $course_id = $course_id;
         $subjects=Subject::with(array('course'=>function($query) use ($course_id){
             $query->where('id',$course_id);
         }))->get();
+
+        //get only the subjects in a given course_id
         $filtered_courses = collect($subjects)->map(function($sub){
             if(isset($sub->course)) return $sub;
         })->reject(function($sub){
             return empty($sub);
         });
-
         $y=count($filtered_courses)+1;
-        //dd($y);
+
+        //all these details are passes to subjects view
         return view('admin.courses.subjects.subject')->with(['subjects'=>$filtered_courses,'course_id'=>$course_id])->with('y',$y);
     }
 
@@ -57,38 +60,24 @@ class SubjectsController extends Controller
      */
     public function store(Request $request)
     {
-        //
-
+        //allows you to create and store a subject
         $this->validate($request,['name'=>'required']);
         //create subject
         $subject_name = $request->input('name');
         $subject_number=$request->input('subnum');
-        //dd($subject_number);
         $course_id = $request->input('course_id');
-        //dd($course_id);
         $subject=new Subject;
         $subject->name=$subject_name;
         $subject->subject_number=$subject_number;
         $subject->course_id=$course_id;
-        //$subject->completed = "";
         $subject->save();
 
         $initial_sub=$subject_number-1;
         $new_perc=$initial_sub/$subject_number;
 
         $allcourses = count((new Subject)->where(['course_id' => $course_id])->get('id'));
-        //dd($allcourses);
-
 
         Usercourseprogress::where(['course_id' => $course_id])->update(['percentage_progress' => DB::raw('`percentage_progress` * ' . $new_perc)]);
-        //dd($users);
-
-
-
-        //DB::update('update usercourseprogresses set percentage_progress = ? where course_id = ?', [$new_perc, $course_id]);
-
-
-
         DB::update('update usercourseprogresses set completed = ? where course_id = ?', ["no", $course_id]);
         DB::update('update usercourses set completed = ? where course_id = ?', ["no", $course_id]);
 

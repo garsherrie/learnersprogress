@@ -22,7 +22,7 @@ class CoursesController extends Controller
      */
     public function index()
     {
-        //
+        //getting all the courses from the database
         $courses = Course::all();
         return view('admin.courses.course')->with('courses', $courses);
     }
@@ -34,8 +34,7 @@ class CoursesController extends Controller
      */
     public function create()
     {
-        //
-
+        //takes us to the view that creates a new course
         return view('admin.courses.createcourse');
     }
 
@@ -47,14 +46,14 @@ class CoursesController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //this is how you create and store a new course
         $this->validate($request, ['name' => 'required']);
-        //create post
 
         $course = new Course;
         $course->name = $request->input('name');
         $course->save();
 
+        //after saving the course it redirects you to view all courses
         return redirect('/courses')->with('success', 'course created successfully');
 
     }
@@ -78,10 +77,7 @@ class CoursesController extends Controller
      */
     public function edit($id)
     {
-        //
-        //$courses=Course::all();
-
-        //return view('admin.courses.editcourse')->with(['courses'=>$courses]);
+        //here you can edit the course details
         $courses = DB::select('select * from courses where id = ?', [$id]);
         return view('admin.courses.editcourse', ['courses' => $courses]);
 
@@ -96,7 +92,7 @@ class CoursesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        //the edited course detais are stored in course database.
         $name = $request->input('name');
         DB::update('update courses set name = ? where id = ?', [$name, $id]);
         return redirect('/courses')->with('success', 'course deleted successfully');
@@ -112,10 +108,9 @@ class CoursesController extends Controller
      */
     public function destroy($id)
     {
-        //
+        //this function allows you to delete a course, permission is given to admins only
         if (Gate::denies('delete-courses')) {
             return redirect('/courses');
-
         }
 
         DB::delete('delete from courses where id = ?', [$id]);
@@ -125,14 +120,10 @@ class CoursesController extends Controller
     public function registered($course_id)
     {
 
+        //check all the registered users for a course and their progress
         $users = Usercourseprogress::join("users", "users.id", "=", "usercourseprogresses.user_id")
             ->select("users.id", "users.name", "users.email", "usercourseprogresses.percentage_progress")
             ->where('course_id', $course_id)->get();
-
-
-        //$registered_users=User::where('id',array($users));
-        //dd($registered_users);
-
 
         return view('admin.courses.usercourses')->with('users', $users);
     }

@@ -14,9 +14,12 @@
 
                                 <form method='GET' class="" action="/edit/{{$course->id}}">
 
-                                    <label>Name</label>
-                                    <input type="text" name="name" value="{{ $course->name }}"/>
-                                    <button type="submit">Create</button>
+                                    <label for="name" class="col-md-2 col-form-label ">Name</label>
+                                    <div class="col-md-6">
+                                    <input type="text" class="form-control" autofocus name="name" value="{{ $course->name }}"/>
+                                    </div>
+                                    <br>
+                                    <button class="btn btn-primary" type="submit" style="margin-left: 15px">Create</button>
                                 </form>
                             <div class="form-group row">
 

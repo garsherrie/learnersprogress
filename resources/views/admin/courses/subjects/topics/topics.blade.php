@@ -1,7 +1,13 @@
 @extends('layouts.app')
 @section('content')
-    <p>Topics</p>
 
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">{{ __('Topics') }}</div>
+
+                    <div class="card-body">
     <form method='POST' class="container" action="/storetopic" enctype="multipart/form-data">
         {{ csrf_field() }}
         <div class="form-group mb-3">
@@ -43,9 +49,10 @@
         <input type="text" name="subject_id" value="{{ $subject_id }}" style="visibility: hidden;">
         <input type="hidden" name="next_topic" value="{{$y}} " >
         <input type="hidden" name="course_id" value="{{$course_id}} " >
-        <div class="d-flex justify-content-end align-items-center">
-            <button type="submit" class="btn btn-success">Create</button>
+        <div class="">
+            <button type="submit" class="btn btn-success btn-sm">Create</button>
         </div>
+        <br>
     </form>
 
     @if(count($topics)>0)
@@ -68,15 +75,15 @@
                         <td>{{ $topic->definition }}</td>
                         <td class="w-25">
                             <div class="d-flex justify-content-center">
-                                <video controls src="{{ $topic->video }}" width="100%" height="auto" frameborder="0"></video controls>
+                                <video controls src="{{ $topic->video }}" width="100%" height="auto" frameborder="0"></video >
                             </div>
                         </td>
                         <td>{{ $topic->question }}</td>
                         <td>
-                            <button class="btn btn-primary">EDIT</button>
+                            <button class="btn btn-primary btn-sm">EDIT</button>
                         </td>
                         <td>
-                            <a class="btn btn-danger" href="/deletetopic/{{$topic->id}}">DELETE</a>
+                            <a class="btn btn-danger btn-sm" href="/deletetopic/{{$topic->id}}">DELETE</a>
                         </td>
 
                     </tr>
@@ -88,6 +95,6 @@
     @else
         <p>No Topic found</p>
     @endif
-
+                    </div></div></div></div></div>
 
 @endsection

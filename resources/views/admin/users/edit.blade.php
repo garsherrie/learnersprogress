@@ -8,7 +8,7 @@
                 <div class="card-header">Edit user: {{ $user->name }}</div>
 
                 <div class="card-body">
-          
+
           <form action="{{ route('admin.users.update',$user) }}" method='POST'>
                <div class="form-group row">
                             <label for="email" class="col-md-2 col-form-label text-md-right">Email</label>
@@ -52,7 +52,7 @@
             @endforeach
         </div>
              </div>
-            <button type="submit" class="btn btn-primary">Update</button>
+            <button type="submit" class="btn btn-primary" style="margin-left: 140px">Update</button>
 
           </form>
                 </div>

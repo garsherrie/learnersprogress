@@ -34,19 +34,7 @@
                     {{ config('app.name', 'Laravel') }}
                 </a>
 
-                @can('manage-users')
 
-                    <div class="rightnav" >
-                        <a href="/about/{{ Auth::user()->id }}" class="btn btn-primary">My profile</a>
-                        <a href="{{  route('admin.users.index') }}" class="btn btn-danger">Users</a>
-                        <a href="/courses" class="btn btn-primary">Courses</a>
-                 @endcan
-                 @can('students')
-                    <div class="rightnav" >
-                        <a href="/about/{{ Auth::user()->id }}" class="btn btn-primary">My profile</a>
-                        <a href="/studentcourses" class="btn btn-primary">Courses</a>
-
-                 @endcan
 
 
                 <button   class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
@@ -75,7 +63,31 @@
                                 </li>
                             @endif
                         @else
-                            <li class="nav-item dropdown">
+                            @can('manage-users')
+
+                                <li class="nav-item">
+                                    <a href="/about/{{ Auth::user()->id }}" class="nav-link">My profile</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{  route('admin.users.index') }}" class="nav-link ">Users</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/courses" class="nav-link">Courses</a>
+                                </li>
+
+                            @endcan
+                            @can('students')
+                                    <li class="nav-item">
+                                        <a href="/about/{{ Auth::user()->id }}" class="nav-link">My profile</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="/studentcourses" class="nav-link">Courses</a>
+                                    </li>
+
+                            @endcan
+
+
+                                        <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     {{ Auth::user()->name }}
                                 </a>

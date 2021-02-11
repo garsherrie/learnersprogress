@@ -101,35 +101,40 @@ class TopicsController extends Controller
 
 
 
+
         $c=Usersubjectprogress::where('subject_id',$subject_id)->pluck('completed')->toArray();
-        $subject_status=$c[0];
+       // dd($c);
+
         //dd($subject_status);
 
+        if(empty($c)){
 
-        if($subject_status==='yes'){
+        }else{
+            $subject_status=$c[0];
+            if($subject_status==='yes'){
 
-            $test = User::with(['usersubjectprogress'=>function($query) use ($course_id) {
-                $query->where(['course_id'=>$course_id,'completed'=>'yes']);
-            }])->where(['role_id'=>2])->get();
+                $test = User::with(['usersubjectprogress'=>function($query) use ($course_id) {
+                    $query->where(['course_id'=>$course_id,'completed'=>'yes']);
+                }])->where(['role_id'=>2])->get();
 
-            $collection = collect($test)->map(function ($item) {
-                return $item;
-            })->reject(function ($item) {
+                $collection = collect($test)->map(function ($item) {
+                    return $item;
+                })->reject(function ($item) {
                     return sizeof($item->usersubjectprogress) <= 0;
-            });
+                });
 
 
-            $allcourses = count((new Subject)->where(['course_id' => $course_id])->get());
-            foreach ($collection as $item) {
-                $subject_count = 0;
-                $subject_count = sizeof($item['usersubjectprogress']) + $subject_count;
-                $item['subject_count'] = $subject_count;
-                $new_comp=$item['subject_count']-1;
-                $new_user_courseperc=($new_comp/$allcourses)*100;
-                //print $item['id'];
-                //dd($item['id']);
-                Usercourseprogress::where(['course_id' => $course_id,'user_id'=>$item['id']])->update(['completed'=>'no','percentage_progress' =>$new_user_courseperc]);
-            }
+                $allcourses = count((new Subject)->where(['course_id' => $course_id])->get());
+                foreach ($collection as $item) {
+                    $subject_count = 0;
+                    $subject_count = sizeof($item['usersubjectprogress']) + $subject_count;
+                    $item['subject_count'] = $subject_count;
+                    $new_comp=$item['subject_count']-1;
+                    $new_user_courseperc=($new_comp/$allcourses)*100;
+                    //print $item['id'];
+                    //dd($item['id']);
+                    Usercourseprogress::where(['course_id' => $course_id,'user_id'=>$item['id']])->update(['completed'=>'no','percentage_progress' =>$new_user_courseperc]);
+                }
 //            dd($test);
 //            $allcourses = count((new Subject)->where(['course_id' => $course_id,]));
 //            $completed_sub=count((new Usersubjectprogress)->where(['course_id'=>$course_id,'completed'=>'yes']));
@@ -138,14 +143,30 @@ class TopicsController extends Controller
 //            $new_user_courseperc=$new_comp/$allcourses;
 
 
-            Usersubjectprogress::where(['subject_id' => $subject_id])->update(['completed'=>'no','percentage_progress' => \Illuminate\Support\Facades\DB::raw('`percentage_progress` * ' . $new_perc)]);
+                Usersubjectprogress::where(['subject_id' => $subject_id])->update(['completed'=>'no','percentage_progress' => \Illuminate\Support\Facades\DB::raw('`percentage_progress` * ' . $new_perc)]);
 
 
+            }
+            else{
+                Usersubjectprogress::where(['subject_id' => $subject_id])->update(['percentage_progress' => \Illuminate\Support\Facades\DB::raw('`percentage_progress` * ' . $new_perc)]);
+                //dd($users);
+            }
+            foreach ($request->input('choices') as $choice) {
+                $new_choice = new Choice();
+                $new_choice->topic_id = $topic->id;
+                $new_choice->choice = $choice['choice'];
+                $new_choice->correct = boolval($choice['isCorrect'] ?? false);
+                $new_choice->save();
+
+                DB::update('update usersubjectprogresses set completed = ? where subject_id = ?', ["no", $subject_id]);
+                DB::update('update usersubjects set completed = ? where subject_id = ?', ["no", $subject_id]);
+
+                DB::update('update usercourseprogresses set completed = ? where course_id = ?', ["no", $course_id]);
+                DB::update('update usercourses set completed = ? where course_id = ?', ["no", $course_id]);
+            }
         }
-        else{
-            Usersubjectprogress::where(['subject_id' => $subject_id])->update(['percentage_progress' => \Illuminate\Support\Facades\DB::raw('`percentage_progress` * ' . $new_perc)]);
-            //dd($users);
-        }
+
+
 
 
 
@@ -163,22 +184,6 @@ class TopicsController extends Controller
 ////        Usercourseprogress::where(['course_id' => $course_id])->update(['percentage_progress' => \Illuminate\Support\Facades\DB::raw('`percentage_progress` * ' . $new_perc)]);
 ////        //dd($users);
 //
-
-
-
-        foreach ($request->input('choices') as $choice) {
-            $new_choice = new Choice();
-            $new_choice->topic_id = $topic->id;
-            $new_choice->choice = $choice['choice'];
-            $new_choice->correct = boolval($choice['isCorrect'] ?? false);
-            $new_choice->save();
-
-            DB::update('update usersubjectprogresses set completed = ? where subject_id = ?', ["no", $subject_id]);
-            DB::update('update usersubjects set completed = ? where subject_id = ?', ["no", $subject_id]);
-
-            DB::update('update usercourseprogresses set completed = ? where course_id = ?', ["no", $course_id]);
-            DB::update('update usercourses set completed = ? where course_id = ?', ["no", $course_id]);
-        }
 
         return redirect('/addtopic/' . $subject_id)->with('success', 'topic created successfully');
     }
@@ -234,22 +239,31 @@ class TopicsController extends Controller
 
 
 
+
         $c=Topic::where('id',$id)->pluck('subject_id')->toArray();
         $subject_id=$c[0];
         $course_id = Subject::where('id',$subject_id)->pluck('course_id');
         $initial_top = count((new Topic())->where('subject_id', $subject_id)->get());
         $now_top=$initial_top-1;
 
+        $c=Usersubjectprogress::where('subject_id',$subject_id)->pluck('completed')->toArray();
+        // dd($c);
 
-        if($now_top !==0){
-                $new_perc=$initial_top/$now_top;
-                $current_perc=Usersubjectprogress::where('subject_id',$subject_id)->pluck('percentage_progress');
-                $new_perc=$new_perc*$current_perc[0];
-                if($new_perc===100){
+        //dd($subject_status);
 
-                    $test = User::with(['usersubjectprogress'=>function($query) use ($course_id) {
-                        $query->where(['course_id'=>$course_id,'completed'=>'no']);
-                    }])->where(['role_id'=>2])->get();
+        if(empty($c)){
+
+        }else {
+
+            if ($now_top !== 0) {
+                $new_perc = $initial_top / $now_top;
+                $current_perc = Usersubjectprogress::where('subject_id', $subject_id)->pluck('percentage_progress');
+                $new_perc = $new_perc * $current_perc[0];
+                if ($new_perc === 100) {
+
+                    $test = User::with(['usersubjectprogress' => function ($query) use ($course_id) {
+                        $query->where(['course_id' => $course_id, 'completed' => 'no']);
+                    }])->where(['role_id' => 2])->get();
                     $collection = collect($test)->map(function ($item) {
                         return $item;
                     })->reject(function ($item) {
@@ -262,39 +276,39 @@ class TopicsController extends Controller
                         $subject_count = 0;
                         $subject_count = sizeof($item['usersubjectprogress']) + $subject_count;
                         $item['subject_count'] = $subject_count;
-                        $new_comp=$item['subject_count']-1;
-                        $new_user_courseperc=($new_comp/$allcourses)*100;
+                        $new_comp = $item['subject_count'] - 1;
+                        $new_user_courseperc = ($new_comp / $allcourses) * 100;
 //                        dd($new_comp,$allcourses,$new_user_courseperc);
                         //dd($new_user_courseperc);
                         //print $item['id'];
                         //dd($item['id']);
 
-                        if($new_user_courseperc!==100){
-                            Usercourseprogress::where(['course_id' => $course_id,'user_id'=>$item['id']])->update(['completed'=>'no','percentage_progress' =>$new_user_courseperc]);
+                        if ($new_user_courseperc !== 100) {
+                            Usercourseprogress::where(['course_id' => $course_id, 'user_id' => $item['id']])->update(['completed' => 'no', 'percentage_progress' => $new_user_courseperc]);
 
-                        }else{
-                            Usercourseprogress::where(['course_id' => $course_id,'user_id'=>$item['id']])->update(['completed'=>'yes','percentage_progress' =>$new_user_courseperc]);
+                        } else {
+                            Usercourseprogress::where(['course_id' => $course_id, 'user_id' => $item['id']])->update(['completed' => 'yes', 'percentage_progress' => $new_user_courseperc]);
                         }
 
                     }
 
-                    Usersubjectprogress::where(['subject_id' => $subject_id, 'completed' => 'no'])->update(['topic_number'=>DB::raw('topic_number - 1'),'completed'=>'yes','percentage_progress' => '100']);
+                    Usersubjectprogress::where(['subject_id' => $subject_id, 'completed' => 'no'])->update(['topic_number' => DB::raw('topic_number - 1'), 'completed' => 'yes', 'percentage_progress' => '100']);
                     DB::table('usersubjects')->where(['subject_id' => $subject_id])->update(array('completed' => 'yes'));
 
 
-                }
-                else {
-                    Usersubjectprogress::where(['subject_id' => $subject_id, 'completed' => 'no'])->update(['topic_number'=>DB::raw('topic_number - 1'),'percentage_progress' =>  $new_perc]);
+                } else {
+                    Usersubjectprogress::where(['subject_id' => $subject_id, 'completed' => 'no'])->update(['topic_number' => DB::raw('topic_number - 1'), 'percentage_progress' => $new_perc]);
                     DB::table('usersubjects')->where(['subject_id' => $subject_id])->update(array('completed' => 'no'));
                 }
-        }
-        else{
-            Usersubjectprogress::where(['subject_id' => $subject_id])->update(['percentage_progress' =>'0','completed'=>'no']);
-            DB::table('usersubjects')->where(['subject_id' => $subject_id])->update(array('completed' => 'no'));
-        }
+            } else {
+                Usersubjectprogress::where(['subject_id' => $subject_id])->update(['percentage_progress' => '0', 'completed' => 'no']);
+                DB::table('usersubjects')->where(['subject_id' => $subject_id])->update(array('completed' => 'no'));
+            }
 
+        }
 
         DB::delete('delete from topics where id = ?',[$id]);
+
 
 
         return redirect('/addtopic/'.$subject_id)->with('success','topic deleted successfully');

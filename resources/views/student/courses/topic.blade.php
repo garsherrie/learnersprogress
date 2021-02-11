@@ -1,9 +1,14 @@
 @extends('layouts.app')
 @section('content')
 
-    <div class="">
-        <a href="">Back</a>
-    </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">{{ __('Student Courses') }}</div>
+
+                    <div class="card-body">
+
     <br>
     <div class="container2">
         <div class="skill2" style="width: {{$percentage}}%">{{number_format($percentage, 2)}}%</div>
@@ -60,4 +65,10 @@
             </div>
         </div>
     </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
